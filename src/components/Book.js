@@ -35,7 +35,8 @@ export default function Book({
     const similarController = new AbortController();
 
     async function fetchDetailsAndSimilar() {
-      let isDetailsPhase = true;
+      let detailsLoaded = false;
+      
       try {
         setErrorDetails("");
         setErrorSimilar("");
@@ -55,7 +56,7 @@ export default function Book({
 
         setBookDetails(detailsData);
         setLoadingDetails(false);
-        isDetailsPhase = false;
+        detailsLoaded = true;
 
         // 2) Similar books by author's last name (fallback: by title)
         setLoadingSimilar(true);
@@ -93,7 +94,7 @@ export default function Book({
       } catch (err) {
         if (detailsController.signal.aborted || similarController.signal.aborted) return;
         console.error("Fetch error:", err);
-        if (isDetailsPhase) {
+        if (!detailsLoaded) {
           setLoadingDetails(false);
           setErrorDetails("Could not load book details.");
         } else {
