@@ -35,12 +35,13 @@ export default function Book({
     const similarController = new AbortController();
 
     async function fetchDetailsAndSimilar() {
+      let isDetailsPhase = true;
       try {
         setErrorDetails("");
         setErrorSimilar("");
         setLoadingDetails(true);
 
-        // 1) Book details by ISBN-13 (goes through your proxy)
+        // 1) Book details by ISBN-13
         const detailsRes = await fetch(`${API_BASE}/books/${id}`, {
           signal: detailsController.signal,
         });
@@ -54,8 +55,9 @@ export default function Book({
 
         setBookDetails(detailsData);
         setLoadingDetails(false);
+        isDetailsPhase = false;
 
-        // 2) Similar books by author's last name (fallback: by title) — also through proxy
+        // 2) Similar books by author's last name (fallback: by title)
         setLoadingSimilar(true);
         let query;
         
@@ -91,7 +93,7 @@ export default function Book({
       } catch (err) {
         if (detailsController.signal.aborted || similarController.signal.aborted) return;
         console.error("Fetch error:", err);
-        if (loadingDetails) {
+        if (isDetailsPhase) {
           setLoadingDetails(false);
           setErrorDetails("Could not load book details.");
         } else {
