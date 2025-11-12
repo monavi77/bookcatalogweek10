@@ -21,6 +21,7 @@ function App() {
     image: "",
     price: "",
   });
+  const [bookShowingDetails, setBookShowingDetails] = useState(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("books");
@@ -173,78 +174,99 @@ function App() {
       <main className="content">
         {currentView === "books" ? (
           <>
-            <div className="button-column">
-              <button className="view-switch-btn" onClick={() => setCurrentView("loans")}>
-                Loan Management
-              </button>
-              <button className="add-btn" onClick={() => setShowModal(true)}>
-                + Add
-              </button>
-              <button
-                className="update-btn"
-                onClick={() => {
-                  const selected = books.find((b) => b.selected);
-                  if (!selected) {
-                    alert("Please select a book to update.");
-                    return;
-                  }
-                  setEditingId(selected.isbn13);
-                  setFormData({
-                    title: selected.title || "",
-                    author: selected.author || "",
-                    url: selected.url || "",
-                    image: selected.image || "",
-                    price: selected.price ? String(parseFloat(String(selected.price).replace(/[^0-9.]/g, ""))) : "",
-                  });
-                  setShowModal(true);
-                }}
-              >
-                Update
-              </button>
-              <button className="delete-btn" onClick={handleDelete}>
-                Delete
-              </button>
-              <div className="filters" style={{ marginBottom: 16 }}>
-                <label>
-                  Price Filter:
-                  <select
-                    value={priceFilter}
-                    onChange={(e) => setPriceFilter(e.target.value)}
-                  >
-                    <option value="all">All</option>
-                    <option value="lt10">Under $10</option>
-                    <option value="10to20">$10 - $20</option>
-                    <option value="gt20">Over $20</option>
-                  </select>
-                </label>
+            {!bookShowingDetails && (
+              <div className="button-column">
+                <button className="view-switch-btn" onClick={() => setCurrentView("loans")}>
+                  Loan Management
+                </button>
+                <button className="add-btn" onClick={() => setShowModal(true)}>
+                  + Add
+                </button>
+                <button
+                  className="update-btn"
+                  onClick={() => {
+                    const selected = books.find((b) => b.selected);
+                    if (!selected) {
+                      alert("Please select a book to update.");
+                      return;
+                    }
+                    setEditingId(selected.isbn13);
+                    setFormData({
+                      title: selected.title || "",
+                      author: selected.author || "",
+                      url: selected.url || "",
+                      image: selected.image || "",
+                      price: selected.price ? String(parseFloat(String(selected.price).replace(/[^0-9.]/g, ""))) : "",
+                    });
+                    setShowModal(true);
+                  }}
+                >
+                  Update
+                </button>
+                <button className="delete-btn" onClick={handleDelete}>
+                  Delete
+                </button>
+                <div className="filters" style={{ marginBottom: 16 }}>
+                  <label>
+                    Price Filter:
+                    <select
+                      value={priceFilter}
+                      onChange={(e) => setPriceFilter(e.target.value)}
+                    >
+                      <option value="all">All</option>
+                      <option value="lt10">Under $10</option>
+                      <option value="10to20">$10 - $20</option>
+                      <option value="gt20">Over $20</option>
+                    </select>
+                  </label>
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="grid updt">
-              {books
-                .filter((book) => {
-                  if (priceFilter === "all") return true;
-                  const priceNum = book.price ? parseFloat(String(book.price).replace(/[^0-9.]/g, "")) : null;
-                  if (priceNum == null || Number.isNaN(priceNum)) return false;
-                  if (priceFilter === "lt10") return priceNum < 10;
-                  if (priceFilter === "10to20") return priceNum >= 10 && priceNum <= 20;
-                  if (priceFilter === "gt20") return priceNum > 20;
-                  return true;
-                })
-                .map((book) => (
-                  <Book
-                    key={book.isbn13}
-                    id={book.isbn13}
-                    title={book.title}
-                    price={book.price}
-                    image={book.image}
-                    url={book.url}
-                    selected={book.selected}
-                    onSelect={handleSelect}
-                    isLoaned={isBookLoaned(book.isbn13)}
-                  />
-                ))}
-            </div>
+            {bookShowingDetails ? (
+              <Book
+                key={bookShowingDetails}
+                id={bookShowingDetails}
+                title={books.find(b => b.isbn13 === bookShowingDetails)?.title || ""}
+                price={books.find(b => b.isbn13 === bookShowingDetails)?.price}
+                image={books.find(b => b.isbn13 === bookShowingDetails)?.image}
+                url={books.find(b => b.isbn13 === bookShowingDetails)?.url}
+                selected={false}
+                onSelect={handleSelect}
+                isLoaned={isBookLoaned(bookShowingDetails)}
+                onShowDetails={() => setBookShowingDetails(bookShowingDetails)}
+                onHideDetails={() => setBookShowingDetails(null)}
+                forceShowDetails={true}
+              />
+            ) : (
+              <div className="grid updt">
+                {books
+                  .filter((book) => {
+                    if (priceFilter === "all") return true;
+                    const priceNum = book.price ? parseFloat(String(book.price).replace(/[^0-9.]/g, "")) : null;
+                    if (priceNum == null || Number.isNaN(priceNum)) return false;
+                    if (priceFilter === "lt10") return priceNum < 10;
+                    if (priceFilter === "10to20") return priceNum >= 10 && priceNum <= 20;
+                    if (priceFilter === "gt20") return priceNum > 20;
+                    return true;
+                  })
+                  .map((book) => (
+                    <Book
+                      key={book.isbn13}
+                      id={book.isbn13}
+                      title={book.title}
+                      price={book.price}
+                      image={book.image}
+                      url={book.url}
+                      selected={book.selected}
+                      onSelect={handleSelect}
+                      isLoaned={isBookLoaned(book.isbn13)}
+                      onShowDetails={() => setBookShowingDetails(book.isbn13)}
+                      onHideDetails={() => setBookShowingDetails(null)}
+                    />
+                  ))}
+              </div>
+            )}
           </>
         ) : (
           <div className="loan-management">

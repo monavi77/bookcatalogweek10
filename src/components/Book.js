@@ -13,8 +13,11 @@ export default function Book({
   selected,
   onSelect = () => {},
   isLoaned,
+  onShowDetails,
+  onHideDetails,
+  forceShowDetails = false,
 }) {
-  const [showDetails, setShowDetails] = useState(false);
+  const [showDetails, setShowDetails] = useState(forceShowDetails);
   const [bookDetails, setBookDetails] = useState(null);
   const [similarBooks, setSimilarBooks] = useState([]);
   const [loadingDetails, setLoadingDetails] = useState(false);
@@ -27,6 +30,10 @@ export default function Book({
     mountedRef.current = true;
     return () => { mountedRef.current = false; };
   }, []);
+
+  useEffect(() => {
+    setShowDetails(forceShowDetails);
+  }, [forceShowDetails]);
 
   useEffect(() => {
     if (!showDetails || !id) return;
@@ -127,6 +134,9 @@ export default function Book({
   const handleViewDetails = (e) => {
     e.stopPropagation();
     setShowDetails(true);
+    if (onShowDetails) {
+      onShowDetails();
+    }
   };
 
   const handleDismiss = () => {
@@ -135,6 +145,9 @@ export default function Book({
     setSimilarBooks([]);
     setErrorDetails("");
     setErrorSimilar("");
+    if (onHideDetails) {
+      onHideDetails();
+    }
   };
 
   if (showDetails) {
