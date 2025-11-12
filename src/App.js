@@ -157,10 +157,6 @@ function App() {
     return loans.some((loan) => loan.bookId === bookId);
   };
 
-  const getLoanedBook = (bookId) => {
-    return loans.find((loan) => loan.bookId === bookId);
-  };
-
   const availableBooks = books.filter((book) => !isBookLoaned(book.isbn13));
   const loanedBooks = loans.map((loan) => {
     const book = books.find((b) => b.isbn13 === loan.bookId);
